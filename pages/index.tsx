@@ -1,28 +1,47 @@
-import { nanoid } from "nanoid";
 import { GetServerSideProps } from "next";
-import { createSpace } from "replicache-nextjs/lib/backend";
 
-function Page() {
-  return "";
-}
+import { spaceExists } from "replicache-nextjs/lib/backend";
+import { useReplicache } from "replicache-nextjs/lib/frontend";
 
-// This is the entrypoint for the application.
-//
-// Next.js runs this function server-side (see:
-// https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props).
-//
-// We randomly generate a new list ID and create a "space" for its data server-
-// side, then redirect to /list/<id>.
+import App from "../src/app";
+import { mutators } from "../src/mutators";
+
+// Next.js runs this server-side.
 export const getServerSideProps: GetServerSideProps = async () => {
-  // Create a new random list and corresponding space on the backend.
-  const listID = "main";
-  //await createSpace(listID);
+
+  let listID = "main";
+
+  // Ensure the selected space exists. It's common during development for
+  // developers to delete the backend database. As a convenience, we
+  // automatically pick a new one when this occurs by redirecting back to the
+  // root.
+  if (!(await spaceExists(listID))) {
+    return {
+      redirect: {
+        destination: `/`,
+        permanent: false,
+      },
+    };
+  }
+
   return {
-    redirect: {
-      destination: `/list/${listID}`,
-      permanent: false,
+    props: {
+      listID,
     },
   };
 };
 
-export default Page;
+// Runs client-side.
+export default function Home({ listID }: { listID: string }) {
+  // Load the space "listID"
+  const rep = useReplicache(listID, mutators);
+  if (!rep) {
+    return null;
+  }
+
+  return (
+    <div className="todoapp">
+      <App rep={rep} />
+    </div>
+  );
+}
