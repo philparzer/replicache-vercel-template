@@ -15,7 +15,7 @@ function Page() {
 // side, then redirect to /list/<id>.
 export const getServerSideProps: GetServerSideProps = async () => {
   // Create a new random list and corresponding space on the backend.
-  const listID = "main";
+  const listID = nanoid(6);
   await createSpace(listID);
   return {
     redirect: {
