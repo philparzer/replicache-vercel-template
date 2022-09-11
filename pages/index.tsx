@@ -16,7 +16,7 @@ function Page() {
 export const getServerSideProps: GetServerSideProps = async () => {
   // Create a new random list and corresponding space on the backend.
   const listID = "main";
-  await createSpace(listID);
+  //await createSpace(listID);
   return {
     redirect: {
       destination: `/list/${listID}`,
